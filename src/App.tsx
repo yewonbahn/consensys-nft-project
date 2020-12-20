@@ -1,107 +1,56 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Sprite, Stage } from "@inlet/react-pixi";
 import "./App.css";
 import dingoLines from "./dingolines.png";
-import dingoBaseRed from "./dingobase_red.png";
-import dingoBaseBlue from "./dingobase_blue.png";
-import dingoEarsRed from "./dingoears_red.png";
-import dingoEarLeftRed from "./dingo-ear-left-red.png";
-import dingoEarRightRed from "./dingo-ear-right-red.png";
+import dingoBase from "./dingo-base.png";
+import dingoEarLeft from "./dingo-ear-left.png";
+import dingoEarRight from "./dingo-ear-right.png";
+import dingoMaskRight from "./dingo-mask-right.png";
 
 const W = 600;
 const H = 540;
 
-type DingoConfig = {
-  [key: string]: string;
+const colorToHex = {
+  red: 0xdca779,
+  cream: 0xf6dfa7,
+  blue: 0x6a6b87,
+  gray: 0xcdcdd7,
 };
 
+const DefaultDingoConfig = {
+  base: null,
+  earLeft: null,
+  earRight: null,
+  maskRight: null,
+};
+
+const partToImg = {
+  base: dingoBase,
+  earLeft: dingoEarLeft,
+  earRight: dingoEarRight,
+  maskRight: dingoMaskRight,
+};
+
+type DingoColor = keyof typeof colorToHex | null;
+type DingoPart = keyof typeof partToImg;
+
+type DingoConfig = {
+  [part in DingoPart]: DingoColor;
+};
+
+// const config = {
+//   earLeft: "red",
+//   earRight: "",
+//   base: "red",
+// };
+
 function App() {
-  // using canvas in ts-react:
-  // https://medium.com/better-programming/add-an-html-canvas-into-your-react-app-176dab099a79
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  const [dingoConfig, setDingoConfig] = useState<DingoConfig>({});
+  const [dingoConfig, setDingoConfig] = useState<DingoConfig>(
+    DefaultDingoConfig
+  );
+  const [tint, setTint] = useState<number>(0x27e10e);
 
-  const dingoParts = useRef<{
-    [key: string]: HTMLImageElement;
-  }>({
-    [dingoLines]: new Image(),
-    [dingoBaseRed]: new Image(),
-    [dingoBaseBlue]: new Image(),
-    [dingoEarsRed]: new Image(),
-    [dingoEarLeftRed]: new Image(),
-    [dingoEarRightRed]: new Image(),
-  });
-
-  const [readyDingoParts, setReadyDingoParts] = useState<{
-    [key: string]: boolean;
-  }>({});
-
-  useEffect(() => {
-    for (const partSrc in dingoParts.current) {
-      const image = dingoParts.current[partSrc];
-      image.src = partSrc;
-      image.onload = () => {
-        setReadyDingoParts((prevState) => ({ ...prevState, [partSrc]: true }));
-      };
-      dingoParts.current[partSrc] = image;
-    }
-  }, [dingoParts, setReadyDingoParts]);
-
-  useEffect(() => {
-    if (canvasRef.current) {
-      const renderCtx = canvasRef.current.getContext("2d");
-      if (renderCtx) {
-        setContext(renderCtx);
-      }
-
-      if (context) {
-        context.clearRect(0, 0, W, H);
-
-        switch (dingoConfig.base) {
-          case "red":
-            if (readyDingoParts[dingoBaseRed] && readyDingoParts[dingoLines]) {
-              context.drawImage(dingoParts.current[dingoBaseRed], 0, 0, W, H);
-            }
-            break;
-          case "blue":
-            if (readyDingoParts[dingoBaseBlue] && readyDingoParts[dingoLines]) {
-              context.drawImage(dingoParts.current[dingoBaseBlue], 0, 0, W, H);
-            }
-            break;
-        }
-        switch (dingoConfig.earLeft) {
-          case "red":
-            if (readyDingoParts[dingoEarLeftRed]) {
-              context.drawImage(
-                dingoParts.current[dingoEarLeftRed],
-                0,
-                0,
-                W,
-                H
-              );
-            }
-            break;
-        }
-        switch (dingoConfig.earRight) {
-          case "red":
-            if (readyDingoParts[dingoEarRightRed]) {
-              context.drawImage(
-                dingoParts.current[dingoEarRightRed],
-                0,
-                0,
-                W,
-                H
-              );
-            }
-            break;
-        }
-
-        if (readyDingoParts[dingoLines])
-          context.drawImage(dingoParts.current[dingoLines], 0, 0, W, H);
-        return;
-      }
-    }
-  }, [context, dingoConfig, readyDingoParts]);
+  useEffect(() => {}, [dingoConfig]);
 
   return (
     <div
@@ -109,16 +58,23 @@ function App() {
         margin: "auto",
       }}
     >
-      <canvas
-        id="canvas"
-        ref={canvasRef}
+      <Stage
         width={W}
         height={H}
         style={{
-          border: "2px solid #000",
+          border: "1px solid #000",
           marginTop: 10,
         }}
-      ></canvas>
+        options={{
+          backgroundColor: 0xf6f5f9,
+          antialias: true,
+          autoDensity: true,
+        }}
+      >
+        <DingoDrawing config={dingoConfig} />
+        <Sprite width={W} height={H} image={dingoLines} />
+      </Stage>
+
       <form>
         <h3>body color</h3>
         <li>
@@ -130,7 +86,9 @@ function App() {
             defaultChecked
             onChange={(e) =>
               setDingoConfig((prevState) => {
-                return { ...prevState, base: e.target.value };
+                const state: DingoConfig = { ...prevState };
+                state.base = null;
+                return state;
               })
             }
           ></input>
@@ -144,7 +102,9 @@ function App() {
             id="basered"
             onChange={(e) =>
               setDingoConfig((prevState) => {
-                return { ...prevState, base: e.target.value };
+                const state: DingoConfig = { ...prevState };
+                state.base = "red";
+                return state;
               })
             }
           ></input>
@@ -154,65 +114,164 @@ function App() {
           <input
             type="radio"
             name="base"
+            value="cream"
+            id="basecream"
+            onChange={(e) =>
+              setDingoConfig((prevState) => {
+                const state: DingoConfig = { ...prevState };
+                state.base = "cream";
+                return state;
+              })
+            }
+          ></input>
+          <label htmlFor="basecream">cream</label>
+        </li>
+        <li>
+          <input
+            type="radio"
+            name="base"
             value="blue"
             id="baseblue"
             onChange={(e) =>
               setDingoConfig((prevState) => {
-                return { ...prevState, base: e.target.value };
+                const state: DingoConfig = { ...prevState };
+                state.base = "blue";
+                return state;
               })
             }
           ></input>
           <label htmlFor="baseblue">blue</label>
         </li>
+        <li>
+          <input
+            type="radio"
+            name="base"
+            value="gray"
+            id="basegray"
+            onChange={(e) =>
+              setDingoConfig((prevState) => {
+                const state: DingoConfig = { ...prevState };
+                state.base = "gray";
+                return state;
+              })
+            }
+          ></input>
+          <label htmlFor="basegray">gray</label>
+        </li>
         <h3>dingo ears</h3>
-        <div className="checkbox">
-          <label>
-            <input
-              type="checkbox"
-              value="red"
-              checked={dingoConfig.earLeft === "red"}
-              onChange={(e) =>
-                setDingoConfig((prevState) => {
-                  return {
-                    ...prevState,
-                    earLeft: e.target.checked ? "red" : "",
-                  };
-                })
-              }
-            />
-            left ear (red)
-          </label>
-        </div>
-        <div className="checkbox">
-          <label>
-            <input
-              type="checkbox"
-              value="red"
-              checked={dingoConfig.earRight === "red"}
-              onChange={(e) =>
-                setDingoConfig((prevState) => {
-                  return {
-                    ...prevState,
-                    earRight: e.target.checked ? "red" : "",
-                  };
-                })
-              }
-            />
-            left ear (red)
-          </label>
-        </div>
+        <Checkbox
+          dingoConfig={dingoConfig}
+          setDingoConfig={setDingoConfig}
+          color="red"
+          part="earLeft"
+        >
+          left ear
+        </Checkbox>
+        <Checkbox
+          dingoConfig={dingoConfig}
+          setDingoConfig={setDingoConfig}
+          color="red"
+          part="earRight"
+        >
+          right ear
+        </Checkbox>
+        <Checkbox
+          dingoConfig={dingoConfig}
+          setDingoConfig={setDingoConfig}
+          color="red"
+          part="maskRight"
+        >
+          right mask
+        </Checkbox>
+        <Checkbox
+          dingoConfig={dingoConfig}
+          setDingoConfig={setDingoConfig}
+          color="blue"
+          part="earLeft"
+        >
+          left ear
+        </Checkbox>
+        <Checkbox
+          dingoConfig={dingoConfig}
+          setDingoConfig={setDingoConfig}
+          color="blue"
+          part="earRight"
+        >
+          right ear
+        </Checkbox>
+        <Checkbox
+          dingoConfig={dingoConfig}
+          setDingoConfig={setDingoConfig}
+          color="blue"
+          part="maskRight"
+        >
+          right mask
+        </Checkbox>
+        <h3>dingo tint</h3>
+        <input
+          value={tint.toString(16)}
+          onChange={(e) => setTint(parseInt(e.target.value, 16))}
+        />
       </form>
     </div>
   );
 }
 
-// const handleDingoConfigChange = (
-//   configKey: keyof DingoConfig,
-//   setDingoConfig: React.Dispatch<React.SetStateAction<DingoConfig>>
-// ) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-//   setDingoConfig((prevState) => {
-//     return { ...prevState, [configKey]: e.target.value };
-//   });
-// };
+type DingoDrawingProps = {
+  config: DingoConfig;
+};
+
+const DingoDrawing = ({ config }: DingoDrawingProps) => {
+  return (
+    <React.Fragment>
+      {Object.keys(config).map((part) => {
+        const dingoColor = config[part as DingoPart];
+        return dingoColor === null ? null : (
+          <Sprite
+            key={`${part}-${dingoColor}`}
+            width={W}
+            height={H}
+            image={partToImg[part as DingoPart]}
+            tint={colorToHex[dingoColor]}
+          />
+        );
+      })}
+    </React.Fragment>
+  );
+};
+
+const Checkbox = ({
+  dingoConfig,
+  part,
+  color,
+  setDingoConfig,
+  children,
+}: {
+  dingoConfig: DingoConfig;
+  part: DingoPart;
+  color: DingoColor;
+  setDingoConfig: React.Dispatch<React.SetStateAction<DingoConfig>>;
+  children: string;
+}) => {
+  return (
+    <div>
+      <label>
+        <input
+          type="checkbox"
+          value={color ? color : "none"}
+          checked={dingoConfig[part] === color}
+          onChange={(e) =>
+            setDingoConfig((prevState) => {
+              const state: DingoConfig = { ...prevState };
+              state[part] = e.target.checked ? color : null;
+              return state;
+            })
+          }
+        />
+        [{color}] {children}
+      </label>
+    </div>
+  );
+};
 
 export default App;
