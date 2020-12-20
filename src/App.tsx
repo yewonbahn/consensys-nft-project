@@ -4,9 +4,11 @@ import dingoLines from "./dingolines.png";
 import dingoBaseRed from "./dingobase_red.png";
 import dingoBaseBlue from "./dingobase_blue.png";
 import dingoEarsRed from "./dingoears_red.png";
+import dingoEarLeftRed from "./dingo-ear-left-red.png";
+import dingoEarRightRed from "./dingo-ear-right-red.png";
 
-const w = 600;
-const h = 540;
+const W = 600;
+const H = 540;
 
 type DingoConfig = {
   [key: string]: string;
@@ -26,6 +28,8 @@ function App() {
     [dingoBaseRed]: new Image(),
     [dingoBaseBlue]: new Image(),
     [dingoEarsRed]: new Image(),
+    [dingoEarLeftRed]: new Image(),
+    [dingoEarRightRed]: new Image(),
   });
 
   const [readyDingoParts, setReadyDingoParts] = useState<{
@@ -51,45 +55,49 @@ function App() {
       }
 
       if (context) {
-        context.clearRect(0, 0, w, h);
+        context.clearRect(0, 0, W, H);
 
-        if (dingoConfig.base) {
-          switch (dingoConfig.base) {
-            case "red":
-              if (
-                readyDingoParts[dingoBaseRed] &&
-                readyDingoParts[dingoLines]
-              ) {
-                context.drawImage(dingoParts.current[dingoBaseRed], 0, 0, w, h);
-              }
-              break;
-            case "blue":
-              if (
-                readyDingoParts[dingoBaseBlue] &&
-                readyDingoParts[dingoLines]
-              ) {
-                context.drawImage(
-                  dingoParts.current[dingoBaseBlue],
-                  0,
-                  0,
-                  w,
-                  h
-                );
-                context.drawImage(dingoParts.current[dingoLines], 0, 0, w, h);
-              }
-              break;
-          }
-          switch (dingoConfig.ears) {
-            case "red":
-              if (readyDingoParts[dingoEarsRed]) {
-                context.drawImage(dingoParts.current[dingoEarsRed], 0, 0, w, h);
-              }
-              break;
-          }
+        switch (dingoConfig.base) {
+          case "red":
+            if (readyDingoParts[dingoBaseRed] && readyDingoParts[dingoLines]) {
+              context.drawImage(dingoParts.current[dingoBaseRed], 0, 0, W, H);
+            }
+            break;
+          case "blue":
+            if (readyDingoParts[dingoBaseBlue] && readyDingoParts[dingoLines]) {
+              context.drawImage(dingoParts.current[dingoBaseBlue], 0, 0, W, H);
+            }
+            break;
+        }
+        switch (dingoConfig.earLeft) {
+          case "red":
+            if (readyDingoParts[dingoEarLeftRed]) {
+              context.drawImage(
+                dingoParts.current[dingoEarLeftRed],
+                0,
+                0,
+                W,
+                H
+              );
+            }
+            break;
+        }
+        switch (dingoConfig.earRight) {
+          case "red":
+            if (readyDingoParts[dingoEarRightRed]) {
+              context.drawImage(
+                dingoParts.current[dingoEarRightRed],
+                0,
+                0,
+                W,
+                H
+              );
+            }
+            break;
         }
 
         if (readyDingoParts[dingoLines])
-          context.drawImage(dingoParts.current[dingoLines], 0, 0, w, h);
+          context.drawImage(dingoParts.current[dingoLines], 0, 0, W, H);
         return;
       }
     }
@@ -98,48 +106,113 @@ function App() {
   return (
     <div
       style={{
-        textAlign: "center",
+        margin: "auto",
       }}
     >
       <canvas
         id="canvas"
         ref={canvasRef}
-        width={w}
-        height={h}
+        width={W}
+        height={H}
         style={{
           border: "2px solid #000",
           marginTop: 10,
         }}
       ></canvas>
       <form>
-        <select
-          name="base"
-          onChange={handleDingoConfigChange("base", setDingoConfig)}
-        >
-          <option></option>
-          <option>red</option>
-          <option>blue</option>
-        </select>
-        <select
-          name="ears"
-          onChange={handleDingoConfigChange("ears", setDingoConfig)}
-        >
-          <option></option>
-          <option>red</option>
-          <option>blue</option>
-        </select>
+        <h3>body color</h3>
+        <li>
+          <input
+            type="radio"
+            name="base"
+            value="none"
+            id="basenone"
+            defaultChecked
+            onChange={(e) =>
+              setDingoConfig((prevState) => {
+                return { ...prevState, base: e.target.value };
+              })
+            }
+          ></input>
+          <label htmlFor="basenone">none</label>
+        </li>
+        <li>
+          <input
+            type="radio"
+            name="base"
+            value="red"
+            id="basered"
+            onChange={(e) =>
+              setDingoConfig((prevState) => {
+                return { ...prevState, base: e.target.value };
+              })
+            }
+          ></input>
+          <label htmlFor="basered">red</label>
+        </li>
+        <li>
+          <input
+            type="radio"
+            name="base"
+            value="blue"
+            id="baseblue"
+            onChange={(e) =>
+              setDingoConfig((prevState) => {
+                return { ...prevState, base: e.target.value };
+              })
+            }
+          ></input>
+          <label htmlFor="baseblue">blue</label>
+        </li>
+        <h3>dingo ears</h3>
+        <div className="checkbox">
+          <label>
+            <input
+              type="checkbox"
+              value="red"
+              checked={dingoConfig.earLeft === "red"}
+              onChange={(e) =>
+                setDingoConfig((prevState) => {
+                  return {
+                    ...prevState,
+                    earLeft: e.target.checked ? "red" : "",
+                  };
+                })
+              }
+            />
+            left ear (red)
+          </label>
+        </div>
+        <div className="checkbox">
+          <label>
+            <input
+              type="checkbox"
+              value="red"
+              checked={dingoConfig.earRight === "red"}
+              onChange={(e) =>
+                setDingoConfig((prevState) => {
+                  return {
+                    ...prevState,
+                    earRight: e.target.checked ? "red" : "",
+                  };
+                })
+              }
+            />
+            left ear (red)
+          </label>
+        </div>
       </form>
     </div>
   );
 }
 
-const handleDingoConfigChange = (
-  configKey: keyof DingoConfig,
-  setDingoConfig: React.Dispatch<React.SetStateAction<DingoConfig>>
-) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-  setDingoConfig((prevState) => {
-    return { ...prevState, [configKey]: e.target.value };
-  });
-};
+// const handleDingoConfigChange = (
+//   configKey: keyof DingoConfig,
+//   setDingoConfig: React.Dispatch<React.SetStateAction<DingoConfig>>
+// ) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+//   setDingoConfig((prevState) => {
+//     return { ...prevState, [configKey]: e.target.value };
+//   });
+// };
 
 export default App;
