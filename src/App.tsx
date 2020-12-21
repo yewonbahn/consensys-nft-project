@@ -49,6 +49,7 @@ function App() {
     DefaultDingoConfig
   );
   const [tint, setTint] = useState<number>(0x27e10e);
+  const [view, setView] = useState<string>("body");
 
   useEffect(() => {}, [dingoConfig]);
 
@@ -74,6 +75,8 @@ function App() {
         <DingoDrawing config={dingoConfig} />
         <Sprite width={W} height={H} image={dingoLines} />
       </Stage>
+
+      <Configorator view={view} setView={setView} />
 
       <form>
         <h3>body color</h3>
@@ -271,6 +274,64 @@ const Checkbox = ({
         [{color}] {children}
       </label>
     </div>
+  );
+};
+
+const Configorator = ({
+  setView,
+  view,
+}: {
+  setView: React.Dispatch<React.SetStateAction<string>>;
+  view: string;
+}) => {
+  return (
+    <div>
+      <div>
+        <ViewTitle name="body" setView={setView}>
+          Body
+        </ViewTitle>
+        <ViewTitle name="earL" setView={setView}>
+          Ear L
+        </ViewTitle>
+        <ViewTitle name="earR" setView={setView}>
+          Ear R
+        </ViewTitle>
+        <ViewTitle name="maskL" setView={setView}>
+          Mask L
+        </ViewTitle>
+        <ViewTitle name="maskR" setView={setView}>
+          Mask R
+        </ViewTitle>
+        <ViewTitle name="mottle" setView={setView}>
+          Mottle
+        </ViewTitle>
+      </div>
+      <ConfigView view={view} />
+    </div>
+  );
+};
+
+const ConfigView = ({ view }: { view: string }) => {
+  return <p>{view}</p>;
+};
+
+const ViewTitle = ({
+  children,
+  name,
+  setView,
+}: {
+  children: string;
+  name: string;
+  setView: React.Dispatch<React.SetStateAction<string>>;
+}) => {
+  return (
+    <button
+      onClick={() => {
+        setView(name);
+      }}
+    >
+      {children}
+    </button>
   );
 };
 
