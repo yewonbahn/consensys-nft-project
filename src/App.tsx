@@ -1,5 +1,7 @@
+/** @jsxImportSource @emotion/react */ // necessary for react17 and create-react-app https://github.com/emotion-js/emotion/issues/2041
 import React, { useEffect, useState } from "react";
 import { Sprite, Stage } from "@inlet/react-pixi";
+import { css } from "@emotion/react/macro";
 import "./App.css";
 import dingoLines from "./dingolines.png";
 import dingoBase from "./dingo-base.png";
@@ -55,9 +57,9 @@ function App() {
 
   return (
     <div
-      style={{
-        margin: "auto",
-      }}
+      css={css`
+        margin: auto;
+      `}
     >
       <Stage
         width={W}
@@ -285,7 +287,12 @@ const Configorator = ({
   view: string;
 }) => {
   return (
-    <div>
+    <div
+      css={css`
+        display: flex;
+        flex-direction: row;
+      `}
+    >
       <div>
         <ViewTitle name="body" setView={setView}>
           Body
