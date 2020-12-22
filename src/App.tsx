@@ -8,11 +8,16 @@ import dingoLines from "./dingolines.png";
 import dingoBase from "./dingo-base.png";
 import dingoEarLeft from "./dingo-ear-left.png";
 import dingoEarRight from "./dingo-ear-right.png";
+import dingoMaskLeft0 from "./dingo-mask-left-0.png";
+import dingoMaskLeft1 from "./dingo-mask-left-1.png";
 import dingoMaskRight from "./dingo-mask-right.png";
 
 import iconBody from "./icon-body.png";
 import iconEarLeft from "./icon-ear-left.png";
 import iconEarRight from "./icon-ear-right.png";
+import iconMaskLeft0 from "./icon-mask-left-0.png";
+import iconMaskLeft1 from "./icon-mask-left-1.png";
+import iconMaskRight from "./icon-mask-right.png";
 
 const W = 600;
 const H = 540;
@@ -30,14 +35,16 @@ const DefaultDingoConfig = {
   },
   earLeft: {},
   earRight: {},
+  maskLeft: {},
   maskRight: {},
 };
 
 const partToImg = {
-  base: dingoBase,
-  earLeft: dingoEarLeft,
-  earRight: dingoEarRight,
-  maskRight: dingoMaskRight,
+  base: [dingoBase],
+  earLeft: [dingoEarLeft],
+  earRight: [dingoEarRight],
+  maskLeft: [dingoMaskLeft0, dingoMaskLeft1],
+  maskRight: [dingoMaskRight],
 };
 
 type DingoColor = keyof typeof colorToHex | null;
@@ -101,20 +108,25 @@ const DingoDrawing = ({ config }: DingoDrawingProps) => {
     <React.Fragment>
       {Object.keys(config).map((part) => {
         let { color, style } = config[part as DingoPart];
-        if (!style) {
+        if (style === null || style === undefined) {
           return null;
         }
-        if (!color) {
-          color = "blue"; // TODO default while trying to set colours
+        let tint;
+        if (color) {
+          tint = colorToHex[color];
         }
+        if (part === "base") {
+          tint = 0xdddddd; // TODO default while trying to set colours
+        }
+
         return (
           <Sprite
             key={`${part}-${color}-${style}`}
             width={W}
             height={H}
-            image={partToImg[part as DingoPart]}
+            image={partToImg[part as DingoPart][style]}
             // tint={colorToHex[color]}
-            tint={0x27e10e} // TODO
+            tint={tint || 0xaaaaaa} // TODO
           />
         );
       })}
@@ -160,16 +172,25 @@ const Configorator = ({
           Body
         </ViewTitle>
         <ViewTitle name="earL" setView={setView} currentView={view}>
-          Ear L
+          Ear (left)
         </ViewTitle>
         <ViewTitle name="earR" setView={setView} currentView={view}>
-          Ear R
+          Ear (right)
         </ViewTitle>
         <ViewTitle name="maskL" setView={setView} currentView={view}>
-          Mask L
+          Mask (left)
         </ViewTitle>
         <ViewTitle name="maskR" setView={setView} currentView={view}>
-          Mask R
+          Mask (right)
+        </ViewTitle>
+        <ViewTitle name="eyes" setView={setView} currentView={view}>
+          Eyes
+        </ViewTitle>
+        <ViewTitle name="eyebrows" setView={setView} currentView={view}>
+          Eyebrows
+        </ViewTitle>
+        <ViewTitle name="chest" setView={setView} currentView={view}>
+          Chest
         </ViewTitle>
         <ViewTitle name="speckles" setView={setView} currentView={view}>
           Speckles
@@ -193,7 +214,7 @@ const Option = ({
 }: {
   img?: string;
   dingoPart: DingoPart;
-  dingoPartStyle: DingoPartStyle;
+  dingoPartStyle: DingoPartStyle | null;
   dingoConfig: DingoConfig;
   setDingoConfig: React.Dispatch<React.SetStateAction<DingoConfig>>;
 }) => {
@@ -230,12 +251,16 @@ const Option = ({
         key={`${dingoPart}-${dingoPartStyle}`}
         type="radio"
         name={dingoPart}
-        value={dingoPartStyle}
+        value={dingoPartStyle || "none"}
         defaultChecked={dingoConfig[dingoPart].style === dingoPartStyle}
         onChange={(e) => {
           setDingoConfig((prevState) => {
             const state: DingoConfig = { ...prevState };
-            state[dingoPart].style = dingoPartStyle;
+            if (dingoPartStyle !== null) {
+              state[dingoPart].style = dingoPartStyle;
+            } else {
+              state[dingoPart].style = undefined;
+            }
             return state;
           });
         }}
@@ -289,13 +314,13 @@ const ConfigView = ({
           <Option
             dingoConfig={dingoConfig}
             dingoPart="earLeft"
-            dingoPartStyle={0}
+            dingoPartStyle={null}
             setDingoConfig={setDingoConfig}
           />
           <Option
             dingoConfig={dingoConfig}
             dingoPart="earLeft"
-            dingoPartStyle={1}
+            dingoPartStyle={0}
             img={iconEarLeft}
             setDingoConfig={setDingoConfig}
           />
@@ -308,19 +333,65 @@ const ConfigView = ({
           <Option
             dingoConfig={dingoConfig}
             dingoPart="earRight"
-            dingoPartStyle={0}
+            dingoPartStyle={null}
             setDingoConfig={setDingoConfig}
           />
           <Option
             dingoConfig={dingoConfig}
             dingoPart="earRight"
-            dingoPartStyle={1}
+            dingoPartStyle={0}
             img={iconEarRight}
             setDingoConfig={setDingoConfig}
           />
         </React.Fragment>
       );
       break;
+    case "maskL":
+      View = (
+        <React.Fragment>
+          <Option
+            dingoConfig={dingoConfig}
+            dingoPart="maskLeft"
+            dingoPartStyle={null}
+            setDingoConfig={setDingoConfig}
+          />
+          <Option
+            dingoConfig={dingoConfig}
+            dingoPart="maskLeft"
+            dingoPartStyle={0}
+            img={iconMaskLeft0}
+            setDingoConfig={setDingoConfig}
+          />
+          <Option
+            dingoConfig={dingoConfig}
+            dingoPart="maskLeft"
+            dingoPartStyle={1}
+            img={iconMaskLeft1}
+            setDingoConfig={setDingoConfig}
+          />
+        </React.Fragment>
+      );
+      break;
+    case "maskR":
+      View = (
+        <React.Fragment>
+          <Option
+            dingoConfig={dingoConfig}
+            dingoPart="maskRight"
+            dingoPartStyle={null}
+            setDingoConfig={setDingoConfig}
+          />
+          <Option
+            dingoConfig={dingoConfig}
+            dingoPart="maskRight"
+            dingoPartStyle={0}
+            img={iconMaskRight}
+            setDingoConfig={setDingoConfig}
+          />
+        </React.Fragment>
+      );
+      break;
+
     default:
       View = <div>coming soon</div>;
   }
