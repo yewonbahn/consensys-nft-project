@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Sprite, Stage } from "@inlet/react-pixi";
 import { css } from "@emotion/react/macro";
+import { GithubPicker } from "react-color";
 import "./App.css";
 
 import dingoLines from "./dingolines.png";
@@ -22,12 +23,29 @@ import iconMaskRight from "./icon-mask-right.png";
 const W = 600;
 const H = 540;
 
-const colorToHex = {
-  red: 0xdca779,
-  cream: 0xf6dfa7,
-  blue: 0x6a6b87,
-  gray: 0xcdcdd7,
-};
+const dingoPalette = [
+  0xdca779, // red
+  0xf6dfa7, // cream
+  0x6a6b87, // blue
+  0xcdcdd7, // gray
+] as const;
+
+const dingoPaletteHex = dingoPalette.map((num) => numberToHex(num));
+
+function numberToHex(number: number) {
+  return `#${number.toString(16)}`;
+}
+
+function hexToNumber(hex: string): DingoColor {
+  if (hex[0] !== "#") {
+    throw new Error("hex should start with a #, ding dong");
+  }
+  const color = parseInt(hex.substring(1), 16);
+  if (dingoPalette.includes(color as any)) {
+    return color as DingoColor;
+  }
+  throw new Error("that wasn't a dingo color, ding dong");
+}
 
 const DefaultDingoConfig = {
   base: {
@@ -37,6 +55,10 @@ const DefaultDingoConfig = {
   earRight: {},
   maskLeft: {},
   maskRight: {},
+  eyes: {},
+  eyebrows: {},
+  chest: {},
+  speckles: {},
 };
 
 const partToImg = {
@@ -45,9 +67,13 @@ const partToImg = {
   earRight: [dingoEarRight],
   maskLeft: [dingoMaskLeft0, dingoMaskLeft1],
   maskRight: [dingoMaskRight],
+  eyes: [],
+  eyebrows: [],
+  chest: [],
+  speckles: [],
 };
 
-type DingoColor = keyof typeof colorToHex | null;
+type DingoColor = typeof dingoPalette[number] | null;
 type DingoPart = keyof typeof partToImg;
 type DingoPartStyle = number;
 
@@ -62,7 +88,7 @@ function App() {
   const [dingoConfig, setDingoConfig] = useState<DingoConfig>(
     DefaultDingoConfig
   );
-  const [view, setView] = useState<string>("body");
+  const [view, setView] = useState<string>("base");
 
   useEffect(() => {}, [dingoConfig]);
 
@@ -111,22 +137,13 @@ const DingoDrawing = ({ config }: DingoDrawingProps) => {
         if (style === null || style === undefined) {
           return null;
         }
-        let tint;
-        if (color) {
-          tint = colorToHex[color];
-        }
-        if (part === "base") {
-          tint = 0xdddddd; // TODO default while trying to set colours
-        }
-
         return (
           <Sprite
             key={`${part}-${color}-${style}`}
             width={W}
             height={H}
             image={partToImg[part as DingoPart][style]}
-            // tint={colorToHex[color]}
-            tint={tint || 0xaaaaaa} // TODO
+            tint={color || 0xaaaaaa}
           />
         );
       })}
@@ -134,7 +151,7 @@ const DingoDrawing = ({ config }: DingoDrawingProps) => {
   );
 };
 
-const color = {
+const COLOR = {
   lightblue: "aliceblue",
   gray: "#ccc",
   yellow: "#fff9cd",
@@ -165,34 +182,89 @@ const Configorator = ({
           display: flex;
           flex-direction: column;
           align-items: stretch;
-          padding: 5px 0 10px 10px;
+          padding: 10px;
+          background: beige;
         `}
       >
-        <ViewTitle name="body" setView={setView} currentView={view}>
+        <ViewTitle
+          dingoPart="base"
+          setView={setView}
+          currentView={view}
+          setDingoConfig={setDingoConfig}
+          dingoConfig={dingoConfig}
+        >
           Body
         </ViewTitle>
-        <ViewTitle name="earL" setView={setView} currentView={view}>
+        <ViewTitle
+          dingoPart="earLeft"
+          setView={setView}
+          currentView={view}
+          setDingoConfig={setDingoConfig}
+          dingoConfig={dingoConfig}
+        >
           Ear (left)
         </ViewTitle>
-        <ViewTitle name="earR" setView={setView} currentView={view}>
+        <ViewTitle
+          dingoPart="earRight"
+          setView={setView}
+          currentView={view}
+          setDingoConfig={setDingoConfig}
+          dingoConfig={dingoConfig}
+        >
           Ear (right)
         </ViewTitle>
-        <ViewTitle name="maskL" setView={setView} currentView={view}>
+        <ViewTitle
+          dingoPart="maskLeft"
+          setView={setView}
+          currentView={view}
+          setDingoConfig={setDingoConfig}
+          dingoConfig={dingoConfig}
+        >
           Mask (left)
         </ViewTitle>
-        <ViewTitle name="maskR" setView={setView} currentView={view}>
+        <ViewTitle
+          dingoPart="maskRight"
+          setView={setView}
+          currentView={view}
+          setDingoConfig={setDingoConfig}
+          dingoConfig={dingoConfig}
+        >
           Mask (right)
         </ViewTitle>
-        <ViewTitle name="eyes" setView={setView} currentView={view}>
+        <ViewTitle
+          dingoPart="eyes"
+          setView={setView}
+          currentView={view}
+          setDingoConfig={setDingoConfig}
+          dingoConfig={dingoConfig}
+        >
           Eyes
         </ViewTitle>
-        <ViewTitle name="eyebrows" setView={setView} currentView={view}>
+        <ViewTitle
+          dingoPart="eyebrows"
+          setView={setView}
+          currentView={view}
+          setDingoConfig={setDingoConfig}
+          dingoConfig={dingoConfig}
+        >
           Eyebrows
         </ViewTitle>
-        <ViewTitle name="chest" setView={setView} currentView={view}>
+        <ViewTitle
+          dingoPart="chest"
+          setView={setView}
+          currentView={view}
+          setDingoConfig={setDingoConfig}
+          dingoConfig={dingoConfig}
+        >
           Chest
         </ViewTitle>
-        <ViewTitle name="speckles" setView={setView} currentView={view}>
+        <ViewTitle
+          dingoPart="speckles"
+          setView={setView}
+          currentView={view}
+          setDingoConfig={setDingoConfig}
+          dingoConfig={dingoConfig}
+        >
           Speckles
         </ViewTitle>
       </div>
@@ -239,13 +311,13 @@ const Option = ({
           &[type="radio"] + div {
             cursor: pointer;
             filter: brightness(60%);
-            outline: 2px solid ${color.gray};
+            outline: 2px solid ${COLOR.gray};
           }
 
           /* CHECKED STYLES */
           &[type="radio"]:checked + img,
           &[type="radio"]:checked + div {
-            outline: 2px solid ${color.red};
+            outline: 2px solid ${COLOR.red};
           }
         `}
         key={`${dingoPart}-${dingoPartStyle}`}
@@ -272,7 +344,7 @@ const Option = ({
           css={css`
             width: 100px;
             height: 100px;
-            color: ${color.gray};
+            color: ${COLOR.gray};
           `}
         >
           none
@@ -295,7 +367,7 @@ const ConfigView = ({
 }) => {
   let View;
   switch (view) {
-    case "body":
+    case "base":
       View = (
         <React.Fragment>
           <Option
@@ -308,7 +380,7 @@ const ConfigView = ({
         </React.Fragment>
       );
       break;
-    case "earL":
+    case "earLeft":
       View = (
         <React.Fragment>
           <Option
@@ -327,7 +399,7 @@ const ConfigView = ({
         </React.Fragment>
       );
       break;
-    case "earR":
+    case "earRight":
       View = (
         <React.Fragment>
           <Option
@@ -346,7 +418,7 @@ const ConfigView = ({
         </React.Fragment>
       );
       break;
-    case "maskL":
+    case "maskLeft":
       View = (
         <React.Fragment>
           <Option
@@ -372,7 +444,7 @@ const ConfigView = ({
         </React.Fragment>
       );
       break;
-    case "maskR":
+    case "maskRight":
       View = (
         <React.Fragment>
           <Option
@@ -398,13 +470,16 @@ const ConfigView = ({
   return (
     <div
       css={css`
-        border-left: 3px solid ${color.gray};
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
         padding: 10px;
         width: 440px;
         flex: 1 1 auto;
+
+        &:after {
+          border-top: 1px solid red;
+        }
       `}
     >
       {View}
@@ -415,34 +490,69 @@ const ConfigView = ({
 const ViewTitle = ({
   children,
   currentView,
-  name,
+  dingoConfig,
+  dingoPart,
   setView,
+  setDingoConfig,
 }: {
   children: string;
   currentView: string;
-  name: string;
+  dingoConfig: DingoConfig;
+  dingoPart: DingoPart;
   setView: React.Dispatch<React.SetStateAction<string>>;
+  setDingoConfig: React.Dispatch<React.SetStateAction<DingoConfig>>;
 }) => {
-  const isActive = currentView === name;
+  const isActive = currentView === dingoPart;
   return (
-    <ResetButton
+    <div
       css={css`
-        display: block;
-        border-bottom: 2px solid #c6d9ea;
-        text-align: left;
-        padding: 10px 20px 0 5px;
-        background: ${isActive ? color.yellow : "transparent"};
-
-        &:hover {
-          background: ${color.lightblue};
-        }
+        flex: 1 1 auto;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid ${isActive ? COLOR.red : "transparent"};
       `}
-      onClick={() => {
-        setView(name);
-      }}
     >
-      {children}
-    </ResetButton>
+      <ResetButton
+        css={css`
+          display: block;
+          text-align: left;
+          padding: 5px 20px 5px 5px;
+          flex: 1 1 auto;
+
+          &:hover {
+            background: ${COLOR.lightblue};
+          }
+          &:after {
+            width: 100px;
+            border-top: 1px solid blue;
+          }
+        `}
+        onClick={() => {
+          setView(dingoPart);
+        }}
+      >
+        {children}
+      </ResetButton>
+      {dingoConfig[dingoPart].style !== null &&
+      dingoConfig[dingoPart].style !== undefined ? (
+        <ColorPicker
+          color={dingoConfig[dingoPart].color || null}
+          setColor={(newColor: DingoColor) => {
+            setDingoConfig((prevState) => {
+              const state: DingoConfig = { ...prevState };
+              state[dingoPart].color = newColor;
+              return state;
+            });
+          }}
+        />
+      ) : (
+        <div
+          css={css`
+            width: ${ColorPickerSize}px;
+          `}
+        />
+      )}
+    </div>
   );
 };
 
@@ -477,5 +587,111 @@ const ResetButton = (props: any) => (
     {...props}
   />
 );
+
+const ColorPickerSize = 12;
+
+const ColorPicker = ({
+  color,
+  setColor,
+}: {
+  color: DingoColor;
+  setColor: (color: DingoColor) => void;
+}) => {
+  const [showPicker, setShowPicker] = useState<boolean>(false);
+
+  return (
+    <div>
+      <div
+        css={css`
+          padding: 3px;
+          background: #fff;
+          border-radius: 50%;
+          box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+          display: inline-block;
+          cursor: pointer;
+        `}
+        onClick={() => {
+          setShowPicker((prevState) => !prevState);
+        }}
+      >
+        <div
+          css={css`
+            width: ${ColorPickerSize}px;
+            height: ${ColorPickerSize}px;
+            border-radius: 50%;
+            background: ${color ? numberToHex(color) : "white"};
+          `}
+        ></div>
+        {showPicker ? (
+          <div
+            css={css`
+              position: absolute;
+              z-index: 2;
+            `}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowPicker(false);
+            }}
+          >
+            <div
+              css={css`
+                position: fixed;
+                top: 0px;
+                right: 0px;
+                bottom: 0px;
+                left: 0px;
+              `}
+            />
+            <GithubPicker
+              colors={dingoPaletteHex}
+              onChange={(colorResult) => {
+                setColor(hexToNumber(colorResult.hex));
+                setShowPicker(false);
+              }}
+            />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+// const thing = () => (
+//   <div>
+//     <div
+//       css={css`padding: 5px;
+//           background: #fff;
+//           borderRadius: 1px;
+//           boxShadow: 0 0 0 1px rgba(0,0,0,.1);
+//           display: inline-block;
+//           cursor: pointer;`}
+//       onClick={() => setShowPicker(true)}
+//     >
+//       <div css={css`width: '36px';
+//           height: '14px';
+//           borderRadius: '2px';
+//           background: ${color ? color : "white"};`}
+//       </div>
+//     {showPicker ? (
+//       <div css={css`
+//               position: absolute;
+//               zindex: 2;
+//             `}>
+//         <div
+//               css={css`
+//                 position: fixed;
+//                 top: 0px;
+//                 right: 0px;
+//                 bottom: 0px;
+//                 left: 0px;
+//               `} onClick={() => setShowPicker(false)} />
+//         <GithubPicker   onChange={(colorResult) => {
+//                   setColor(hexToNumber(colorResult.hex));
+//                   setShowPicker(false);
+//                 }} />
+//       </div>
+//     ) : null}
+//   </div>
+// );
 
 export default App;
