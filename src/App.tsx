@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */ // necessary for react17 and create-react-app https://github.com/emotion-js/emotion/issues/2041
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Sprite, Stage } from "@inlet/react-pixi";
 import { css } from "@emotion/react/macro";
 import { CirclePicker } from "react-color";
@@ -41,8 +41,20 @@ function App() {
     DefaultDingoConfig
   );
   const [view, setView] = useState<DingoPart>("base");
-
+  const stageRef = useRef<any>();
   useEffect(() => {}, [dingoConfig]);
+
+  // const GetApp = withPixiApp(({ app }: { app: PIXI.Application }) => {
+  //   setApp(app);
+  //   return null;
+  // });
+
+  // https://www.html5gamedevs.com/topic/31190-saving-pixi-content-to-image/
+  // const dataUrl = app
+  //   ? app.renderer.extract.canvas(app.stage).toDataURL("image/png")
+  //   : null;
+
+  const app = stageRef.current ? stageRef.current.app : null;
 
   return (
     <div
@@ -53,23 +65,32 @@ function App() {
       `}
     >
       <h1>super dingo maker!</h1>
-      <Stage
-        width={W}
-        height={H}
-        style={{
-          border: "1px solid #000",
-          marginTop: 10,
-        }}
-        options={{
-          backgroundColor: 0xf6f5f9,
-          antialias: true,
-          autoDensity: true,
-        }}
+      <div
+        css={css`
+          display: flex;
+          flex-direction: column;
+          align-items: end;
+        `}
       >
-        <DingoDrawing config={dingoConfig} />
-        <Sprite width={W} height={H} image={dingoLines} />
-      </Stage>
-
+        <Stage
+          ref={stageRef}
+          width={W}
+          height={H}
+          style={{
+            border: "1px solid #000",
+            marginTop: 10,
+          }}
+          options={{
+            backgroundColor: 0xf6f5f9,
+            antialias: true,
+            autoDensity: true,
+          }}
+        >
+          <DingoDrawing config={dingoConfig} />
+          <Sprite width={W} height={H} image={dingoLines} />
+        </Stage>
+        <Download app={app} />
+      </div>
       <Configorator
         dingoConfig={dingoConfig}
         view={view}
@@ -79,6 +100,29 @@ function App() {
     </div>
   );
 }
+
+const Download = ({ app }: { app: PIXI.Application }) => {
+  return (
+    <a
+      css={css`
+        margin-top: 10px;
+        ${!app ? "visibility: hidden" : null};
+      `}
+      title="download your dingo"
+      href=""
+      target="_blank"
+      onClick={(e) => {
+        e.preventDefault();
+        const url = app
+          ? app.renderer.extract.canvas(app.stage).toDataURL("image/png")
+          : undefined;
+        window.open(url, "_blank");
+      }}
+    >
+      Download
+    </a>
+  );
+};
 
 type DingoDrawingProps = {
   config: DingoConfig;
