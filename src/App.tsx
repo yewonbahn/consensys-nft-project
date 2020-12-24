@@ -42,17 +42,23 @@ function App() {
   );
   const [view, setView] = useState<DingoPart>("base");
   const stageRef = useRef<any>();
-  useEffect(() => { }, [dingoConfig]);
 
-  // const GetApp = withPixiApp(({ app }: { app: PIXI.Application }) => {
-  //   setApp(app);
-  //   return null;
-  // });
+  useEffect(() => {
+    let hash = window.location.hash;
+    // slice off the extra `#` at the start of the string
+    if (hash.length > 0) {
+      hash = hash.slice(1);
+      const unhashed = atob(hash);
+      const dingoConfig = JSON.parse(unhashed);
+      setDingoConfig(dingoConfig);
+    }
+  }, []);
 
-  // https://www.html5gamedevs.com/topic/31190-saving-pixi-content-to-image/
-  // const dataUrl = app
-  //   ? app.renderer.extract.canvas(app.stage).toDataURL("image/png")
-  //   : null;
+  useEffect(() => {
+    // update url hash when dingo config changes
+    const hash = btoa(JSON.stringify(dingoConfig));
+    window.location.hash = hash;
+  }, [dingoConfig]);
 
   const app = stageRef.current ? stageRef.current.app : null;
 
@@ -344,17 +350,17 @@ const Option = ({
       {img ? (
         <img width={100} height={100} alt={dingoPart} src={img} />
       ) : (
-          <div
-            css={css`
+        <div
+          css={css`
             width: 100px;
             height: 100px;
             color: ${COLOR.gray};
             border-radius: 5px;
           `}
-          >
-            none
-          </div>
-        )}
+        >
+          none
+        </div>
+      )}
     </label>
   );
 };
@@ -587,14 +593,14 @@ const ViewTitle = ({
 
         &:after {
           ${isActive
-          ? `
+            ? `
               content:"";
               display: inline-block;
               width: 100%;
               margin-right: -100%;
               border-top: 1px solid gray;
           `
-          : null}
+            : null}
         }
 
         &:hover {
