@@ -1,6 +1,7 @@
 {
   "name": "dingo-maker",
   "version": "0.1.0",
+  "homepage": "/super-dingo-maker",
   "private": true,
   "dependencies": {
     "@emotion/babel-plugin": "^11.1.2",

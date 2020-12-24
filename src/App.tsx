@@ -42,7 +42,7 @@ function App() {
   );
   const [view, setView] = useState<DingoPart>("base");
   const stageRef = useRef<any>();
-  useEffect(() => {}, [dingoConfig]);
+  useEffect(() => { }, [dingoConfig]);
 
   // const GetApp = withPixiApp(({ app }: { app: PIXI.Application }) => {
   //   setApp(app);
@@ -109,7 +109,7 @@ const Download = ({ app }: { app: PIXI.Application }) => {
         ${!app ? "visibility: hidden" : null};
       `}
       title="download your dingo"
-      href=""
+      href="#fixme"
       target="_blank"
       onClick={(e) => {
         e.preventDefault();
@@ -344,17 +344,17 @@ const Option = ({
       {img ? (
         <img width={100} height={100} alt={dingoPart} src={img} />
       ) : (
-        <div
-          css={css`
+          <div
+            css={css`
             width: 100px;
             height: 100px;
             color: ${COLOR.gray};
             border-radius: 5px;
           `}
-        >
-          none
-        </div>
-      )}
+          >
+            none
+          </div>
+        )}
     </label>
   );
 };
@@ -587,14 +587,14 @@ const ViewTitle = ({
 
         &:after {
           ${isActive
-            ? `
+          ? `
               content:"";
               display: inline-block;
               width: 100%;
               margin-right: -100%;
               border-top: 1px solid gray;
           `
-            : null}
+          : null}
         }
 
         &:hover {
