@@ -7,16 +7,16 @@ import { CirclePicker } from "react-color";
 import { DingoColor, DingoConfig, DingoPart, DingoPartStyle } from "./types";
 import { dingoPalette, partToImg } from "./const";
 import { hexToNumber, numberToHex } from "./util";
-
+import html2canvas from 'html2canvas';
 import dingoLines from "./dingolines.png";
-
+import { apiKey } from "./APIKEYS";
 import iconBody from "./icon-body.png";
 import iconEarLeft from "./icon-ear-left.png";
 import iconEarRight from "./icon-ear-right.png";
 import iconMaskLeft0 from "./icon-mask-left-0.png";
 import iconMaskLeft1 from "./icon-mask-left-1.png";
 import iconMaskRight from "./icon-mask-right.png";
-
+import { NFTStorage, File } from "nft.storage";
 const W = 600;
 const H = 540;
 
@@ -37,6 +37,15 @@ const DefaultDingoConfig = {
 };
 
 function App() {
+
+  const [image, setImage] = useState('')
+
+  const [petName, setPetName] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [ownerName, setOwnerName] = useState('')
+  const [imageName, setImageName] = useState('')
+  const [imageType, setImageType] = useState('')
+  const [petType, setPetType] = useState('')
   const [dingoConfig, setDingoConfig] = useState<DingoConfig>(
     DefaultDingoConfig
   );
@@ -70,15 +79,16 @@ function App() {
         align-items: center;
       `}
     >
-      <h1>super dingo maker!</h1>
+      <h1>pick your own NFT Avatar!</h1>
       <div
         css={css`
           display: flex;
           flex-direction: column;
           align-items: end;
         `}
-      >
+      ><div >
         <Stage
+        id = "table"
           ref={stageRef}
           width={W}
           height={H}
@@ -94,8 +104,9 @@ function App() {
         >
           <DingoDrawing config={dingoConfig} />
           <Sprite width={W} height={H} image={dingoLines} />
-        </Stage>
-        <Download app={app} />
+        </Stage></div>
+        {/* <Download app={app} /> */}
+        <Create/>
       </div>
       <Configorator
         dingoConfig={dingoConfig}
@@ -106,7 +117,36 @@ function App() {
     </div>
   );
 }
+const Create = () => {
+  const [hash, setHash] = useState("0");
+  return (
+ <button  onClick={(e) => {
+  var Buffer = require('buffer/').Buffer
+  var myImg;
+  e.preventDefault();
+  html2canvas(document.getElementById("table")!).then(function (canvas) {
+    myImg = canvas.toDataURL("image/png");
+    console.log(myImg);
+    var pngBuffer = Buffer.from(myImg);
+    console.log(pngBuffer);
+    const ipfsApi = require('ipfs-api');
+    const ipfs = ipfsApi('ipfs.infura.io', 5001, { protocol: "https" })
+    ipfs.files.add(pngBuffer, (err, result) => {// Upload buffer to IPFS
+      if (err) {
+        return "error";
+      }
+      var fileHash = `${result[0].hash}`;
+      setHash(fileHash);
+      console.log(fileHash);
+    });
 
+    });
+  
+    
+}}>mint</button>   
+      
+  );
+};
 const Download = ({ app }: { app: PIXI.Application }) => {
   return (
     <a
